@@ -1,6 +1,4 @@
 import allure
-from selenium.webdriver.support.ui import WebDriverWait          
-from selenium.webdriver.support import expected_conditions as EC  
 from locators import ForgotPasswordLocators
 from .base_page import BasePage
 
@@ -16,7 +14,5 @@ class ForgotPasswordPage(BasePage):
     def restore_password(self, email: str):
         self.type(ForgotPasswordLocators.EMAIL_INPUT, email)
         self.click(ForgotPasswordLocators.RESTORE_BTN)
-
-        WebDriverWait(self.driver, 10).until(
-            EC.url_contains("/reset-password")
-        )
+        
+        self.wait_url_contains("/reset-password")

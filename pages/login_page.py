@@ -1,4 +1,3 @@
-# pages/login_page.py
 import allure
 from locators import LoginLocators
 from .base_page import BasePage

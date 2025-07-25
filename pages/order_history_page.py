@@ -1,4 +1,3 @@
-# pages/order_history_page.py
 import re
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait

@@ -4,19 +4,26 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import ElementClickInterceptedException
 from config import BASE_URL, DEFAULT_TIMEOUT
 
+
 class BasePage:
     """Базовый класс для всех Page Object'ов."""
 
-    path = ""  # относительный путь страницы; переопределяется в наследниках
+    path: str = ""              # относительный путь страницы
 
-    def __init__(self, driver, base_url: str = None, timeout: int = DEFAULT_TIMEOUT):
+    def __init__(
+        self,
+        driver,
+        base_url: str | None = None,
+        timeout: int = DEFAULT_TIMEOUT,
+    ):
         self.driver = driver
         self.base_url = base_url or BASE_URL
         self.wait = WebDriverWait(driver, timeout)
+        self._timeout = timeout
 
-    # --- базовые действия ---
+    # ---------- базовые действия ----------
     @allure.step("Открыть страницу: {url}")
-    def open(self, url: str = None):
+    def open(self, url: str | None = None):
         """Открыть конкретный URL либо self.path от BASE_URL."""
         target = url or (self.base_url + self.path)
         self.driver.get(target)
@@ -27,7 +34,6 @@ class BasePage:
         try:
             element.click()
         except ElementClickInterceptedException:
-            # если что‑то перекрывает элемент (оверлей и т.д.) — кликаем через JS
             self.driver.execute_script(
                 "arguments[0].scrollIntoView({block:'center'});", element
             )
@@ -39,19 +45,38 @@ class BasePage:
         elem.clear()
         elem.send_keys(text)
 
+    # ---------- вспомогательные ----------
     def element(self, locator):
         return self.wait.until(EC.visibility_of_element_located(locator))
 
     def elements(self, locator):
         return self.driver.find_elements(*locator)
 
-    def current_url(self):
-        return self.driver.current_url.rstrip('/')
+    # ---------- работа с URL ----------
+    def current_url(self) -> str:
+        return self.driver.current_url.rstrip("/")
 
-    def expected_url(self):
-        return (self.base_url + self.path).rstrip('/')
+    def expected_url(self) -> str:
+        return (self.base_url + self.path).rstrip("/")
 
     def assert_url(self):
-        assert self.current_url() == self.expected_url(), (
-            f"Ожидали URL {self.expected_url()}, получили {self.current_url()}"
+        assert (
+            self.current_url() == self.expected_url()
+        ), f"Ожидали URL {self.expected_url()}, получили {self.current_url()}"
+
+    def get_url(self) -> str:
+        """Унифицированный геттер URL для использования в тестах."""
+        return self.current_url()
+
+    # ---------- ожидания URL ----------
+    @allure.step("Ожидать, пока URL перестанет содержать: {part}")
+    def wait_url_not_contains(self, part: str, timeout: int | None = None):
+        return WebDriverWait(self.driver, timeout or self._timeout).until_not(
+            EC.url_contains(part)
+        )
+
+    @allure.step("Ожидать, пока URL будет содержать: {part}")
+    def wait_url_contains(self, part: str, timeout: int | None = None):
+        return WebDriverWait(self.driver, timeout or self._timeout).until(
+            EC.url_contains(part)
         )

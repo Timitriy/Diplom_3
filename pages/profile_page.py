@@ -8,7 +8,9 @@ class ProfilePage(BasePage):
     @allure.step("Перейти во вкладку «История заказов»")
     def go_to_order_history(self):
         self.click(ProfileLocators.ORDER_HISTORY_LINK)
-    
+
     @allure.step("Нажать кнопку «Выход»")
     def logout(self):
         self.click(ProfileLocators.LOGOUT_BUTTON)
+        # форма логина
+        self.wait_url_contains("/login")

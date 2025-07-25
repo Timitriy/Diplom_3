@@ -1,7 +1,7 @@
 from selenium.webdriver.common.by import By
 
 class ResetPasswordLocators:
-    # поле пароля (видимое и в режиме «password», и в режиме «text»)
+    # поле пароля
     PASSWORD_INPUT = (By.CSS_SELECTOR, "input.input__textfield")
 
     # иконка «глаз»

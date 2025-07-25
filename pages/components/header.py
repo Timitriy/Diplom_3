@@ -5,13 +5,12 @@ from locators import HeaderLocators
 from ..base_page import BasePage
 from locators import FeedLocators
 
-
 class Header(BasePage):
     OVERLAY = (By.CSS_SELECTOR, "div.Modal_modal_overlay__x2ZCr")
 
     @allure.step("Кликнуть «Личный Кабинет» в шапке")
     def go_to_personal_account(self):
-        # ждём, когда оверлей станет невидим (или исчезнет из DOM)
+        # ждём, когда оверлей станет невидим
         self.wait.until(EC.invisibility_of_element_located(self.OVERLAY))
         self.click(HeaderLocators.PERSONAL_ACCOUNT)
     

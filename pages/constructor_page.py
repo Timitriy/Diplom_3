@@ -11,8 +11,7 @@ from locators import ConstructorLocators
 from .base_page import BasePage
 
 # ─── вспомогательные константы / regex ─────────────────────────────────────
-ORDER_ID_RE = re.compile(r"^\d{5,}$")     # 5‑6 цифр без «#»
-
+ORDER_ID_RE = re.compile(r"^\d{5,}$")     
 # ─────────────────────────────────────────────────────────────────────────────
 HTML5_DND = """
 const src = arguments[0], tgt = arguments[1];
@@ -68,9 +67,13 @@ class ConstructorPage(BasePage):
     @allure.step("Закрыть модальное окно крестиком")
     def close_modal(self):
         self.click(ConstructorLocators.MODAL_CLOSE_BTN)
-        WebDriverWait(self.driver, 5).until(
-            EC.invisibility_of_element_located(ConstructorLocators.MODAL_TITLE)
-        )
+        try:
+            WebDriverWait(self.driver, 5).until(
+                EC.invisibility_of_element_located(ConstructorLocators.MODAL_TITLE)
+            )
+            return True
+        except TimeoutException:
+            return False
 
     @allure.step("Перетащить булку в конструктор")
     def drag_bun_to_constructor(self):
@@ -111,7 +114,7 @@ class ConstructorPage(BasePage):
             counter = self.element(ConstructorLocators.INGREDIENT_COUNTER)
             return int(counter.text)
         except Exception:
-            return 0  # счётчика нет → 0
+            return 0  
 
     def get_total_price(self) -> int:
         return int(self.element(ConstructorLocators.BASKET_TOTAL).text)
@@ -131,7 +134,7 @@ class ConstructorPage(BasePage):
         elem = WebDriverWait(self.driver, 30).until(
             EC.visibility_of_element_located(ConstructorLocators.ORDER_ID)
         )
-        # ждём, пока в тексте появятся _только_ цифры
+        # ждём, пока в тексте появятся цифры
         WebDriverWait(self.driver, 30).until(
             lambda _: ORDER_ID_RE.match(elem.text.lstrip("#"))
         )
@@ -142,4 +145,10 @@ class ConstructorPage(BasePage):
         self.click(ConstructorLocators.MODAL_CLOSE_BTN)
         WebDriverWait(self.driver, 5).until(
             EC.invisibility_of_element_located(ConstructorLocators.ORDER_ID)
+        )
+
+    @allure.step("Ожидать, пока сумма заказа превысит заданное значение: {value}")
+    def wait_total_price_greater_than(self, value: int, timeout: int = 10):
+        WebDriverWait(self.driver, timeout).until(
+            lambda _: self.get_total_price() > value
         )
